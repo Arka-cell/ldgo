@@ -6,6 +6,7 @@ import (
 
 func (s *Server) InitializeRouter() *gin.Engine {
 	router := s.Router()
-	router.GET("/", getHome)
+	router.GET("/", s.getHome)
+	router.POST("/api/v0/signup", s.signUp)
 	return router
 }
