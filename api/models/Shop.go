@@ -15,7 +15,7 @@ import (
 
 type Shop struct {
 	ID        uint32    `gorm:"primary_key;auto_increment" json:"id"`
-	Title     string    `gorm:"size:255;not null;unique" json:"nickname"`
+	Title     string    `gorm:"size:255;not null" json:"title"`
 	Email     string    `gorm:"size:100;not null;unique" json:"email"`
 	Password  string    `gorm:"size:100;not null;" json:"password"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -70,7 +70,7 @@ func (s *Shop) Validate(action string) error {
 
 	case "create":
 		if s.Title == "" {
-			return errors.New("Required Nickname")
+			return errors.New("Required Title")
 		}
 		if s.Password == "" {
 			return errors.New("Required Password")
