@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Arka-cell/ldgo/api/auth"
 	"github.com/Arka-cell/ldgo/api/models"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (server *Server) signUp(c *gin.Context) {
@@ -30,6 +33,35 @@ func (server *Server) signUp(c *gin.Context) {
 
 }
 
-func login(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{})
+type credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (s *Server) login(c *gin.Context) {
+	creds := credentials{}
+
+	shop := models.Shop{}
+	if err := c.BindJSON(&creds); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Authentication Failed"})
+		fmt.Println("Unable to bind JSON to credentials struct")
+		return
+	}
+	var err error
+
+	err = s.DB.Debug().Model(models.Shop{}).Where("email = ?", creds.Email).Take(&shop).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Authentication Failed"})
+		return
+	}
+	err = models.VerifyPassword(shop.Password, creds.Password)
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Password or Email are false"})
+		return
+	}
+	token, err := auth.CreateToken(shop.ID)
+	if err != nil {
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
 }
