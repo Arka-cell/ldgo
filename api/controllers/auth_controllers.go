@@ -61,6 +61,7 @@ func (s *Server) login(c *gin.Context) {
 	}
 	token, err := auth.CreateToken(shop.ID)
 	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
