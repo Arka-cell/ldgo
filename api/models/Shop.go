@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -17,7 +18,7 @@ type Shop struct {
 	ID        uint32    `gorm:"primary_key;auto_increment" json:"id"`
 	Title     string    `gorm:"size:255;not null" json:"title"`
 	Email     string    `gorm:"size:100;not null;unique" json:"email"`
-	Password  string    `gorm:"size:100;not null;" json:"password"`
+	Password  string    `gorm:"size:100;not null;" json:"password,omitempty"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
@@ -116,6 +117,7 @@ func (s *Shop) FindShopByID(db *gorm.DB, uid uint32) (*Shop, error) {
 	if gorm.IsRecordNotFoundError(err) {
 		return &Shop{}, errors.New("Shop Not Found")
 	}
+
 	return s, err
 }
 
@@ -126,6 +128,7 @@ func (s *Shop) UpdateShop(db *gorm.DB, uid uint32) (*Shop, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	db = db.Debug().Model(&Shop{}).Where("id = ?", uid).Take(&Shop{}).UpdateColumns(
 		map[string]interface{}{
 			"password":  s.Password,
@@ -153,4 +156,22 @@ func (s *Shop) DeleteShop(db *gorm.DB, uid uint32) (int64, error) {
 		return 0, db.Error
 	}
 	return db.RowsAffected, nil
+}
+
+func (shop *Shop) PartialUpdateShop(db *gorm.DB, uid uint32, password string, title string, email string) (*Shop, error) {
+	var err error
+	err = db.Debug().Model(&Shop{}).Where("id = ?", uid).Updates(Shop{Title: title, Password: password, Email: email, UpdatedAt: time.Now()}).Error
+	if err != nil {
+		return &Shop{}, err
+	}
+	if db.Error != nil {
+		return &Shop{}, db.Error
+	}
+	// This is the display the updated user
+	err = db.Debug().Model(&Shop{}).Where("id = ?", uid).Take(&shop).Error
+	fmt.Print(err)
+	if err != nil {
+		return &Shop{}, err
+	}
+	return shop, nil
 }
