@@ -41,8 +41,7 @@ func TokenValid(r *http.Request) error {
 }
 
 func ExtractToken(r *http.Request) string {
-	keys := r.URL.Query()
-	token := keys.Get("token")
+	token := strings.Split(r.Header["Authorization"][0], " ")[1]
 	if token != "" {
 		return token
 	}
