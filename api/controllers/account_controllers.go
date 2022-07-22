@@ -10,6 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func (server *Server) signUp(c *gin.Context) {
 	var shop = models.Shop{}
 	if err := c.BindJSON(&shop); err != nil {
@@ -31,11 +36,6 @@ func (server *Server) signUp(c *gin.Context) {
 		return
 	}
 
-}
-
-type credentials struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
 }
 
 func (s *Server) login(c *gin.Context) {
@@ -65,4 +65,28 @@ func (s *Server) login(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+}
+
+func (s *Server) partialUpdateShop(c *gin.Context) {
+	uid, err := auth.ExtractTokenID(c.Request)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+	shop := models.Shop{}
+	shop.FindShopByID(s.DB, uid)
+	if err != nil {
+		return
+	}
+	if err := c.BindJSON(&shop); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Unable to bind JSON to credentials struct"})
+		return
+	}
+
+	updatedShop, err := shop.PartialUpdateShop(s.DB, uid, shop.Password, shop.Title, shop.Email)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"shop": updatedShop})
 }
