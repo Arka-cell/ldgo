@@ -9,7 +9,7 @@ func (s *Server) InitializeRouter() *gin.Engine {
 	router.GET("/", s.getHome)
 	router.POST("/api/v0/signup", s.signUp)
 	router.POST("/api/v0/login", s.login)
-	router.PATCH("/api/v0/update-shop", s.partialUpdateShop)
+	router.PATCH("/api/v0/shops", s.partialUpdateShop)
 	router.POST("/api/v0/products", s.createProduct)
 	router.DELETE("/api/v0/shops", s.deleteShop)
 	router.GET("/api/v0/shops", s.getAllShops)
