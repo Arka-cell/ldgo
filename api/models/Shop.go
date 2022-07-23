@@ -111,7 +111,7 @@ func (u *Shop) FindAllShops(db *gorm.DB) (*[]Shop, error) {
 
 func (s *Shop) FindShopByID(db *gorm.DB, uid uint32) (*Shop, error) {
 	var err error
-	err = db.Debug().Model(Shop{}).Where("id = ?", uid).Take(&s).Error
+	err = db.Debug().Model(Shop{}).Select([]string{"email", "title", "id", "created_at", "updated_at"}).Where("id = ?", uid).Take(&s).Error
 	if err != nil {
 		return &Shop{}, err
 	}
