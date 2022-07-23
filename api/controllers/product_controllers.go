@@ -30,3 +30,13 @@ func (s *Server) createProduct(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Product Created"})
 
 }
+
+func (s *Server) getAllProducts(c *gin.Context) {
+	product := models.Product{}
+	products, err := product.FindAllProducts(s.DB)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"products": products})
+}
