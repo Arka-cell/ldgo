@@ -15,5 +15,6 @@ func (s *Server) InitializeRouter() *gin.Engine {
 	router.GET("/api/v0/shops", s.getAllShops)
 	router.GET("/api/v0/shops/:id", s.getShop)
 	router.GET("/api/v0/products", s.getAllProducts)
+	router.GET("/api/v0/products/:id", s.getProduct)
 	return router
 }
