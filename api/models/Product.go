@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"html"
+	"math"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ type Product struct {
 	ID          uint32    `gorm:"primary_key;auto_increment" json:"id"`
 	Name        string    `gorm:"size:100;not null" json:"name"`
 	Description string    `gorm:"size:512" json:"description"`
+	Price       float64   `gorm:"default:0" json:"price"`
 	Shop        Shop      `json:"shop"`
 	ShopID      uint32    `gorm:"not null" json:"shop_id"`
 	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -20,9 +22,11 @@ type Product struct {
 }
 
 func (p *Product) Prepare() {
+	adjustedPrice := math.Floor(p.Price*100) / 100
 	p.ID = 0
 	p.Name = html.EscapeString(strings.TrimSpace(p.Name))
 	p.Description = html.EscapeString(strings.TrimSpace(p.Description))
+	p.Price = adjustedPrice
 	p.Shop = Shop{}
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
