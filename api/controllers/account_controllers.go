@@ -102,3 +102,14 @@ func (s *Server) deleteShop(c *gin.Context) {
 	shop.DeleteShop(s.DB, uid)
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Shop deleted"})
 }
+
+func (s *Server) getAllShops(c *gin.Context) {
+	shop := models.Shop{}
+	shops, err := shop.FindAllShops(s.DB)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"shops": shops})
+}
