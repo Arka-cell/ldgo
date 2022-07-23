@@ -90,3 +90,15 @@ func (s *Server) partialUpdateShop(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"shop": updatedShop})
 }
+
+func (s *Server) deleteShop(c *gin.Context) {
+	uid, err := auth.ExtractTokenID(c.Request)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+	shop := models.Shop{}
+	shop.FindShopByID(s.DB, uid)
+	shop.DeleteShop(s.DB, uid)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Shop deleted"})
+}
