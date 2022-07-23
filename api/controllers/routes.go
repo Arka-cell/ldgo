@@ -11,7 +11,7 @@ func (s *Server) InitializeRouter() *gin.Engine {
 	router.POST("/api/v0/login", s.login)
 	router.PATCH("/api/v0/update-shop", s.partialUpdateShop)
 	router.POST("/api/v0/products", s.createProduct)
-	router.DELETE("/api/v0/delete-shop", s.deleteShop)
+	router.DELETE("/api/v0/shops", s.deleteShop)
 	router.GET("/api/v0/shops", s.getAllShops)
 	router.GET("/api/v0/shops/:id", s.getShop)
 	return router
