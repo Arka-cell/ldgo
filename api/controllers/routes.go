@@ -14,5 +14,6 @@ func (s *Server) InitializeRouter() *gin.Engine {
 	router.DELETE("/api/v0/shops", s.deleteShop)
 	router.GET("/api/v0/shops", s.getAllShops)
 	router.GET("/api/v0/shops/:id", s.getShop)
+	router.GET("/api/v0/products", s.getAllProducts)
 	return router
 }
