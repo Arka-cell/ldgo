@@ -10,5 +10,6 @@ func (s *Server) InitializeRouter() *gin.Engine {
 	router.POST("/api/v0/signup", s.signUp)
 	router.POST("/api/v0/login", s.login)
 	router.PATCH("/api/v0/update-shop", s.partialUpdateShop)
+	router.POST("/api/v0/products", s.createProduct)
 	return router
 }
