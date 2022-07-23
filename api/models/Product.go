@@ -11,7 +11,7 @@ import (
 
 type Product struct {
 	ID          uint32    `gorm:"primary_key;auto_increment" json:"id"`
-	Name        string    `gorm:"size:100;not null;unique" json:"name"`
+	Name        string    `gorm:"size:100;not null" json:"name"`
 	Description string    `gorm:"size:512" json:"description"`
 	Shop        Shop      `json:"shop"`
 	ShopID      uint32    `gorm:"not null" json:"shop_id"`
