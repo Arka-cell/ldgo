@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Arka-cell/ldgo/api/auth"
 	"github.com/Arka-cell/ldgo/api/models"
@@ -112,4 +113,15 @@ func (s *Server) getAllShops(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"shops": shops})
+}
+
+func (s *Server) getShop(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	uid := uint32(id)
+	if err != nil {
+		return
+	}
+	shop := models.Shop{}
+	shop.FindShopByID(s.DB, uid)
+	c.IndentedJSON(http.StatusOK, gin.H{"shop": shop})
 }
