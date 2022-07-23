@@ -56,7 +56,7 @@ func (p *Product) FindAllProducts(db *gorm.DB) (*[]Product, error) {
 	}
 	if len(products) > 0 {
 		for i, _ := range products {
-			err := db.Debug().Model(&Shop{}).Where("id = ?", products[i].ShopID).Take(&products[i].Shop).Error
+			err := db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Where("id = ?", products[i].ShopID).Take(&products[i].Shop).Error
 			if err != nil {
 				return &[]Product{}, err
 			}
