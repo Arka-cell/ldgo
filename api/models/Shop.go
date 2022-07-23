@@ -101,7 +101,8 @@ func (s *Shop) SaveShop(db *gorm.DB) (*Shop, error) {
 func (u *Shop) FindAllShops(db *gorm.DB) (*[]Shop, error) {
 	var err error
 	shops := []Shop{}
-	err = db.Debug().Model(&Shop{}).Limit(100).Find(&shops).Error
+	err = db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Limit(100).Find(&shops).Error
+
 	if err != nil {
 		return &[]Shop{}, err
 	}
