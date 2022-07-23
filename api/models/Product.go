@@ -72,7 +72,7 @@ func (p *Product) FindProductByID(db *gorm.DB, pid uint64) (*Product, error) {
 		return &Product{}, err
 	}
 	if p.ID != 0 {
-		err = db.Debug().Model(&Shop{}).Where("id = ?", p.ShopID).Take(&p.Shop).Error
+		err = db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Where("id = ?", p.ShopID).Take(&p.Shop).Error
 		if err != nil {
 			return &Product{}, err
 		}
