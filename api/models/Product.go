@@ -109,3 +109,19 @@ func (p *Product) DeleteAProduct(db *gorm.DB, pid uint64, uid uint32) (int64, er
 	}
 	return db.RowsAffected, nil
 }
+
+func (p *Product) PartialUpdateProduct(db *gorm.DB, pk int32, name string, description string, price float64) (*Product, error) {
+	var err error
+	err = db.Debug().Model(&Product{}).Where("id = ?", pk).Updates(Product{Name: name, Description: description, Price: price, UpdatedAt: time.Now()}).Error
+	if err != nil {
+		return &Product{}, err
+	}
+	if db.Error != nil {
+		return &Product{}, db.Error
+	}
+	err = db.Debug().Model(&Shop{}).Where("id = ?", pk).Take(&p).Error
+	if err != nil {
+		return &Product{}, err
+	}
+	return p, nil
+}
