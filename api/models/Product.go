@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"math"
 	"strings"
@@ -11,14 +12,15 @@ import (
 )
 
 type Product struct {
-	ID          uint32    `gorm:"primary_key;auto_increment" json:"id"`
-	Name        string    `gorm:"size:100;not null" json:"name"`
-	Description string    `gorm:"size:512" json:"description"`
-	Price       float64   `gorm:"default:0" json:"price"`
-	Shop        Shop      `json:"shop"`
-	ShopID      uint32    `gorm:"not null" json:"shop_id"`
-	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	ID          uint32     `gorm:"primary_key;auto_increment" json:"id"`
+	Name        string     `gorm:"size:100;not null" json:"name"`
+	Description string     `gorm:"size:512" json:"description"`
+	Price       float64    `gorm:"default:0" json:"price"`
+	Shop        Shop       `json:"shop"`
+	ShopID      uint32     `gorm:"not null" json:"shop_id"`
+	Categories  []Category `gorm:"many2many:product_categories;" json:"categories"`
+	CreatedAt   time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt   time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Product) Prepare() {
@@ -57,7 +59,12 @@ func (p *Product) FindAllProducts(db *gorm.DB) (*[]Product, error) {
 	if len(products) > 0 {
 		for i, _ := range products {
 			err := db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Where("id = ?", products[i].ShopID).Take(&products[i].Shop).Error
+
 			if err != nil {
+				return &[]Product{}, err
+			}
+			if err := db.Select("id").Preload("Categories").Find(&products[i]).Error; err != nil {
+				fmt.Println(err)
 				return &[]Product{}, err
 			}
 		}
@@ -73,6 +80,9 @@ func (p *Product) FindProductByID(db *gorm.DB, pid uint64) (*Product, error) {
 	}
 	if p.ID != 0 {
 		err = db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Where("id = ?", p.ShopID).Take(&p.Shop).Error
+		if err := db.Select("id").Preload("Categories").Find(&p).Error; err != nil {
+			return &Product{}, err
+		}
 		if err != nil {
 			return &Product{}, err
 		}
@@ -112,7 +122,13 @@ func (p *Product) DeleteAProduct(db *gorm.DB, pid uint64, uid uint32) (int64, er
 
 func (p *Product) PartialUpdateProduct(db *gorm.DB, pk int32, name string, description string, price float64) (*Product, error) {
 	var err error
-	err = db.Debug().Model(&Product{}).Where("id = ?", pk).Updates(Product{Name: name, Description: description, Price: price, UpdatedAt: time.Now()}).Error
+	categories := []Category{}
+	err = db.Debug().Model(&Category{}).Limit(100).Find(&categories).Error
+	if err != nil {
+		return &Product{}, err
+	}
+
+	err = db.Debug().Model(&Product{}).Where("id = ?", pk).Updates(Product{ID: uint32(pk), Name: name, Description: description, Price: price, UpdatedAt: time.Now(), Categories: categories}).Error
 	if err != nil {
 		return &Product{}, err
 	}
