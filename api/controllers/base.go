@@ -30,5 +30,5 @@ func (server *Server) Migrate(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbNa
 			fmt.Printf("We are connected to the %s database", Dbdriver)
 		}
 	}
-	server.DB.Debug().AutoMigrate(&models.Shop{}, &models.Product{})
+	server.DB.Debug().AutoMigrate(&models.Shop{}, &models.Product{}, &models.Category{})
 }
