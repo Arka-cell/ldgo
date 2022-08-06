@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -17,11 +19,28 @@ func (s *Server) createProduct(c *gin.Context) {
 	}
 	var product = models.Product{}
 	var shop = models.Shop{}
+	var categories_ids []float64
 
-	if err := c.BindJSON(&product); err != nil {
+	var mapper map[string]interface{}
+	jsonData, err := ioutil.ReadAll(c.Request.Body)
+	json.Unmarshal([]byte(jsonData), &mapper)
+
+	for key, v := range mapper {
+		if key == "categories" {
+			cats := v.([]interface{})
+			for _, cat := range cats {
+				categories_ids = append(categories_ids, cat.(float64))
+			}
+		}
+	}
+
+	jsonStr, err := json.Marshal(mapper)
+	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Unable to bind data to product"})
 		return
 	}
+
+	json.Unmarshal(jsonStr, product)
 	shop.FindShopByID(s.DB, uid)
 
 	product.ShopID = uid
