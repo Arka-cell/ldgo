@@ -19,7 +19,8 @@ func (s *Server) createProduct(c *gin.Context) {
 	}
 	var product = models.Product{}
 	var shop = models.Shop{}
-	var categories_ids []float64
+	var categories = []models.Category{}
+	var categories_ids []uint32
 
 	var mapper map[string]interface{}
 	jsonData, err := ioutil.ReadAll(c.Request.Body)
@@ -29,7 +30,8 @@ func (s *Server) createProduct(c *gin.Context) {
 		if key == "categories" {
 			cats := v.([]interface{})
 			for _, cat := range cats {
-				categories_ids = append(categories_ids, cat.(float64))
+				id := uint32(cat.(float64))
+				categories_ids = append(categories_ids, id)
 			}
 		}
 	}
@@ -39,10 +41,15 @@ func (s *Server) createProduct(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Unable to bind data to product"})
 		return
 	}
-
+	if len(categories_ids) < 1 {
+		categories_ids = append(categories_ids, 1)
+		var cats map[string]interface{}
+		mapper["categories"] = cats
+	}
+	s.DB.Debug().Model(&models.Category{}).Find(&categories, categories_ids)
 	json.Unmarshal(jsonStr, product)
 	shop.FindShopByID(s.DB, uid)
-
+	product.Categories = categories
 	product.ShopID = uid
 	product.Shop = shop
 	product.Prepare()
