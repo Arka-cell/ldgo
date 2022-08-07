@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"html"
 	"math"
 	"strings"
@@ -64,7 +63,6 @@ func (p *Product) FindAllProducts(db *gorm.DB) (*[]Product, error) {
 				return &[]Product{}, err
 			}
 			if err := db.Select("id").Preload("Categories").Find(&products[i]).Error; err != nil {
-				fmt.Println(err)
 				return &[]Product{}, err
 			}
 		}
@@ -120,20 +118,22 @@ func (p *Product) DeleteAProduct(db *gorm.DB, pid uint64, uid uint32) (int64, er
 	return db.RowsAffected, nil
 }
 
-func (p *Product) PartialUpdateProduct(db *gorm.DB, pk int32, name string, description string, price float64) (*Product, error) {
+func (p *Product) PartialUpdateProduct(db *gorm.DB, pk int32, name string, description string, price float64, categories []Category) (*Product, error) {
 	var err error
-	categories := []Category{}
-	err = db.Debug().Model(&Category{}).Limit(100).Find(&categories).Error
+
 	if err != nil {
 		return &Product{}, err
 	}
-
-	err = db.Debug().Model(&Product{}).Where("id = ?", pk).Updates(Product{ID: uint32(pk), Name: name, Description: description, Price: price, UpdatedAt: time.Now(), Categories: categories}).Error
+	err = db.Debug().Model(&Product{}).Where("id = ?", pk).Updates(Product{ID: uint32(pk), Name: name, Description: description, Price: price, Categories: categories, UpdatedAt: time.Now()}).Error
 	if err != nil {
 		return &Product{}, err
+
 	}
 	if db.Error != nil {
 		return &Product{}, db.Error
+	}
+	if len(categories) > 0 {
+		db.Model(&p).Association("Categories").Clear().Replace(categories)
 	}
 	err = db.Debug().Model(&Shop{}).Where("id = ?", pk).Take(&p).Error
 	if err != nil {
