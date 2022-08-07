@@ -17,6 +17,7 @@ import (
 type Shop struct {
 	ID        uint32    `gorm:"primary_key;auto_increment" json:"id"`
 	Title     string    `gorm:"size:255;not null" json:"title"`
+	Address   string    `gorm:"size:255" json:"address"`
 	Email     string    `gorm:"size:100;not null;unique" json:"email"`
 	Password  string    `gorm:"size:100;not null;" json:"password,omitempty"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -159,9 +160,9 @@ func (s *Shop) DeleteShop(db *gorm.DB, uid uint32) (int64, error) {
 	return db.RowsAffected, nil
 }
 
-func (shop *Shop) PartialUpdateShop(db *gorm.DB, uid uint32, password string, title string, email string) (*Shop, error) {
+func (shop *Shop) PartialUpdateShop(db *gorm.DB, uid uint32, password string, title string, email string, address string) (*Shop, error) {
 	var err error
-	err = db.Debug().Model(&Shop{}).Where("id = ?", uid).Updates(Shop{Title: title, Password: password, Email: email, UpdatedAt: time.Now()}).Error
+	err = db.Debug().Model(&Shop{}).Where("id = ?", uid).Updates(Shop{Title: title, Password: password, Email: email, Address: address, UpdatedAt: time.Now()}).Error
 	if err != nil {
 		return &Shop{}, err
 	}
