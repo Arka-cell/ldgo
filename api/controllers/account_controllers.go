@@ -84,7 +84,9 @@ func (s *Server) partialUpdateShop(c *gin.Context) {
 		return
 	}
 
-	updatedShop, err := shop.PartialUpdateShop(s.DB, uid, shop.Password, shop.Title, shop.Email)
+	updatedShop, err := shop.PartialUpdateShop(
+		s.DB, uid, shop.Password, shop.Title, shop.Email, shop.Address,
+	)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
