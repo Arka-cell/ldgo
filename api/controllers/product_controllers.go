@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -90,18 +91,46 @@ func (s *Server) partialUpdateProduct(c *gin.Context) {
 	if err != nil {
 		return
 	}
+	var categories = []models.Category{}
+	var categories_ids []uint32
+	var mapper map[string]interface{}
+	jsonData, err := ioutil.ReadAll(c.Request.Body)
 	product := models.Product{}
+	json.Unmarshal([]byte(jsonData), &mapper)
+	jsonStr, err := json.Marshal(mapper)
+	fmt.Println("jsonStr", jsonStr)
+	if err != nil {
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Unable to bind data to product"})
+		return
+	}
+	for key, v := range mapper {
+		if key == "categories" {
+			cats := v.([]interface{})
+			for _, cat := range cats {
+				id := uint32(cat.(float64))
+				categories_ids = append(categories_ids, id)
+			}
+		}
+	}
+	if len(categories_ids) > 0 {
+		var cats map[string]interface{}
+		mapper["categories"] = cats
+		fmt.Println("ids are", categories_ids)
+		s.DB.Debug().Model(&models.Category{}).Find(&categories, categories_ids)
+	}
+
+	json.Unmarshal(jsonStr, product)
+
 	product.FindProductByID(s.DB, pk32)
 	if product.ShopID != uid {
 		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 		return
 	}
-	if err := c.BindJSON(&product); err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Unable to bind JSON to credentials struct"})
-		return
-	}
+
+	fmt.Println("Cats", categories)
 	pk64 := int32(pk32)
-	updatedProduct, err := product.PartialUpdateProduct(s.DB, pk64, product.Name, product.Description, product.Price)
+	updatedProduct, err := product.PartialUpdateProduct(s.DB, pk64, product.Name, product.Description, product.Price, categories)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
