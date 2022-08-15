@@ -137,3 +137,25 @@ func (s *Server) partialUpdateProduct(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"product": updatedProduct})
 }
+
+func (s *Server) deleteProduct(c *gin.Context) {
+	uid, err := auth.ExtractTokenID(c.Request)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+	pk, err := strconv.Atoi(c.Param("id"))
+	pk32 := uint64(pk)
+	if err != nil {
+		return
+	}
+	product := models.Product{}
+	product.FindProductByID(s.DB, pk32)
+	if product.ShopID != uid {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+	product.DeleteAProduct(s.DB, pk32, uid)
+	c.IndentedJSON(204, gin.H{"message": "Product deleted successfully"})
+	return
+}
