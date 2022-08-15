@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"math"
 	"strings"
@@ -49,21 +50,24 @@ func (p *Product) SaveProduct(db *gorm.DB) (*Product, error) {
 }
 
 func (p *Product) FindAllProducts(db *gorm.DB) (*[]Product, error) {
+	fmt.Println("starting")
 	var err error
 	products := []Product{}
 	err = db.Debug().Model(&Product{}).Limit(100).Find(&products).Error
 	if err != nil {
 		return &[]Product{}, err
 	}
-	if len(products) > 0 {
-		for i, _ := range products {
-			err := db.Debug().Model(&Shop{}).Select([]string{"email", "title", "id"}).Where("id = ?", products[i].ShopID).Take(&products[i].Shop).Error
 
+	if len(products) > 0 {
+		fmt.Println("")
+		for i, _ := range products {
+			err := db.Debug().Model(
+				&Shop{}).Select([]string{"email", "title", "id"}).
+				Where("id = ?", products[i].ShopID).
+				Take(&products[i].Shop).Error
 			if err != nil {
-				return &[]Product{}, err
-			}
-			if err := db.Select("id").Preload("Categories").Find(&products[i]).Error; err != nil {
-				return &[]Product{}, err
+				product := products[i]
+				product.DeleteAProduct(db, uint64(product.ID), product.ShopID)
 			}
 		}
 	}
