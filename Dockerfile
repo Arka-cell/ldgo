@@ -1,16 +1,3 @@
-# FROM golang:1.18-alpine as builder
-# COPY go.mod go.sum /home/samir/workspace/lastingdynamics/ldgo/
-# WORKDIR /code
-# RUN go mod download
-# COPY . /code/
-# RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o build/ldgo github.com/Arka-cell/ldgo
-
-# FROM alpine
-# #RUN apk add --no-cache ca-certificates && update-ca-certificates
-# COPY --from=builder /home/samir/workspace/lastingdynamics/ldgo /usr/bin/ldgo
-# EXPOSE 8080 8080
-# ENTRYPOINT ["/home/samir/workspace/lastingdynamics/"]
-
 FROM golang:1.18-alpine
 
 LABEL maintainer="Samir Ahmane"
