@@ -29,5 +29,5 @@ func Run() {
 		os.Getenv("DB_NAME"),
 	)
 	router := server.InitializeRouter()
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
