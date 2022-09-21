@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  database:
+    container_name: shopsdb
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=127.0.0.1
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=shopsgo
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+    - "8080:8080"
+
+volumes:
+  data:
